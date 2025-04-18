@@ -36,3 +36,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Crawl data
+/data/
