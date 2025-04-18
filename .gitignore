@@ -43,3 +43,4 @@ Thumbs.db
 
 # Crawl data
 /data/
+/log/
