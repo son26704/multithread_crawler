@@ -1,0 +1,15 @@
+{
+  "startUrls": [
+	"https://dantri.com.vn/",
+	"https://vnexpress.net/",
+	"https://tuoitre.vn/",
+	"https://vietnamnet.vn/",
+	"https://tienphong.vn/"
+  ],
+  "settings": {
+	"maxUrlsPerCrawl": 100,
+	"defaultMaxLevel": 4,
+	"requestDelayMs": 200,
+	"threadPoolSize": 6
+  }
+}

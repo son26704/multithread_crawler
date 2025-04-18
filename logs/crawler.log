@@ -1,0 +1,41 @@
+2025-04-18 11:42:35,155 INFO [main] c.d.c.MainCrawler [MainCrawler.java:20] Starting crawler...
+2025-04-18 11:42:35,467 INFO [main] c.d.c.c.ConfigLoader [ConfigLoader.java:22] Loaded config.json
+2025-04-18 11:42:35,468 INFO [main] c.d.c.q.CrawlQueueManager [CrawlQueueManager.java:16] Queue capacity = 50000
+2025-04-18 11:42:35,485 INFO [main] c.d.c.v.VisitedUrlsManager [VisitedUrlsManager.java:30] Loaded 5914 visited article URLs
+2025-04-18 11:42:35,495 INFO [Worker-0] c.d.c.w.CrawlWorker [CrawlWorker.java:43] Worker started: Worker-0
+2025-04-18 11:42:35,495 INFO [Worker-3] c.d.c.w.CrawlWorker [CrawlWorker.java:43] Worker started: Worker-3
+2025-04-18 11:42:35,495 INFO [Worker-2] c.d.c.w.CrawlWorker [CrawlWorker.java:43] Worker started: Worker-2
+2025-04-18 11:42:35,495 INFO [Worker-1] c.d.c.w.CrawlWorker [CrawlWorker.java:43] Worker started: Worker-1
+2025-04-18 11:42:35,496 INFO [Worker-4] c.d.c.w.CrawlWorker [CrawlWorker.java:43] Worker started: Worker-4
+2025-04-18 11:42:35,496 INFO [Worker-5] c.d.c.w.CrawlWorker [CrawlWorker.java:43] Worker started: Worker-5
+2025-04-18 11:42:35,567 INFO [main] o.q.i.StdSchedulerFactory [StdSchedulerFactory.java:1220] Using default implementation for ThreadExecutor
+2025-04-18 11:42:35,572 INFO [main] o.q.s.SimpleThreadPool [SimpleThreadPool.java:268] Job execution threads will use class loader of thread: main
+2025-04-18 11:42:35,587 INFO [main] o.q.c.SchedulerSignalerImpl [SchedulerSignalerImpl.java:61] Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2025-04-18 11:42:35,588 INFO [main] o.q.c.QuartzScheduler [QuartzScheduler.java:229] Quartz Scheduler v.2.3.2 created.
+2025-04-18 11:42:35,589 INFO [main] o.q.s.RAMJobStore [RAMJobStore.java:155] RAMJobStore initialized.
+2025-04-18 11:42:35,590 INFO [main] o.q.c.QuartzScheduler [QuartzScheduler.java:294] Scheduler meta-data: Quartz Scheduler (v2.3.2) 'DefaultQuartzScheduler' with instanceId 'NON_CLUSTERED'
+  Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
+  NOT STARTED.
+  Currently in standby mode.
+  Number of jobs executed: 0
+  Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.
+  Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
+
+2025-04-18 11:42:35,590 INFO [main] o.q.i.StdSchedulerFactory [StdSchedulerFactory.java:1374] Quartz scheduler 'DefaultQuartzScheduler' initialized from default resource file in Quartz package: 'quartz.properties'
+2025-04-18 11:42:35,590 INFO [main] o.q.i.StdSchedulerFactory [StdSchedulerFactory.java:1378] Quartz scheduler version: 2.3.2
+2025-04-18 11:42:35,598 INFO [main] o.q.c.QuartzScheduler [QuartzScheduler.java:547] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.
+2025-04-18 11:42:35,599 INFO [main] c.d.c.s.SchedulerManager [SchedulerManager.java:35] Scheduler started
+2025-04-18 11:42:35,609 INFO [DefaultQuartzScheduler_Worker-1] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://dantri.com.vn/
+2025-04-18 11:42:35,610 INFO [DefaultQuartzScheduler_Worker-1] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://vnexpress.net/
+2025-04-18 11:42:35,611 INFO [DefaultQuartzScheduler_Worker-1] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://tuoitre.vn/
+2025-04-18 11:42:35,611 INFO [DefaultQuartzScheduler_Worker-1] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://vietnamnet.vn/
+2025-04-18 11:42:35,611 INFO [DefaultQuartzScheduler_Worker-1] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://tienphong.vn/
+2025-04-18 11:47:35,620 INFO [DefaultQuartzScheduler_Worker-2] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://dantri.com.vn/
+2025-04-18 11:47:35,629 INFO [DefaultQuartzScheduler_Worker-2] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://vnexpress.net/
+2025-04-18 11:47:35,629 INFO [DefaultQuartzScheduler_Worker-2] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://tuoitre.vn/
+2025-04-18 11:47:35,629 INFO [DefaultQuartzScheduler_Worker-2] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://vietnamnet.vn/
+2025-04-18 11:47:35,629 INFO [DefaultQuartzScheduler_Worker-2] c.d.c.j.CrawlJob [CrawlJob.java:21] Scheduled startUrl: https://tienphong.vn/
+2025-04-18 11:49:32,771 INFO [main] o.q.c.QuartzScheduler [QuartzScheduler.java:666] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED shutting down.
+2025-04-18 11:49:32,772 INFO [main] o.q.c.QuartzScheduler [QuartzScheduler.java:585] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED paused.
+2025-04-18 11:49:32,772 INFO [main] o.q.c.QuartzScheduler [QuartzScheduler.java:740] Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED shutdown complete.
+2025-04-18 11:49:32,772 INFO [main] c.d.c.MainCrawler [MainCrawler.java:50] Crawler stopped.
