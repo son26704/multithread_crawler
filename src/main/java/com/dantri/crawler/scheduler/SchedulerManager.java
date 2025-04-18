@@ -12,30 +12,31 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 public class SchedulerManager {
     private static final Logger log = LoggerFactory.getLogger(SchedulerManager.class);
-    private Scheduler sched;
+    private Scheduler scheduler;
 
     public void start(CrawlQueueManager q) throws SchedulerException {
-        sched = StdSchedulerFactory.getDefaultScheduler();
+        scheduler = StdSchedulerFactory.getDefaultScheduler();
 
+        // Gọi CrawlJob.execute()
         JobDetail job = newJob(CrawlJob.class)
-                .withIdentity("crawlJob","grp")
+                .withIdentity("crawlJob","group")
                 .build();
         job.getJobDataMap().put("queueManager", q);
 
         Trigger trg = newTrigger()
-                .withIdentity("crawlTrigger","grp")
+                .withIdentity("crawlTrigger","group")
                 .startNow()
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInMinutes(5)
+                        .withIntervalInMinutes(5) // Lập lịch 5 phút
                         .repeatForever())
                 .build();
 
-        sched.scheduleJob(job, trg);
-        sched.start();
+        scheduler.scheduleJob(job, trg);
+        scheduler.start();
         log.info("Scheduler started");
     }
 
     public void shutdown() throws SchedulerException {
-        if (sched!=null) sched.shutdown();
+        if (scheduler!=null) scheduler.shutdown();
     }
 }

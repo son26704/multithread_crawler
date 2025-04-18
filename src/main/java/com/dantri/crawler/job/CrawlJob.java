@@ -12,9 +12,9 @@ public class CrawlJob implements Job {
     private static final Logger log = LoggerFactory.getLogger(CrawlJob.class);
 
     @Override
-    public void execute(JobExecutionContext ctx) {
+    public void execute(JobExecutionContext context) {
         try {
-            CrawlQueueManager q = (CrawlQueueManager)ctx.getJobDetail()
+            CrawlQueueManager q = (CrawlQueueManager)context.getJobDetail()
                     .getJobDataMap().get("queueManager");
             ConfigLoader.getStartUrls().forEach(u -> {
                 q.pushTask(new UrlTask(u,0));

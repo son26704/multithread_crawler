@@ -13,7 +13,9 @@ public class ConfigLoader {
     private static final Logger logger = LoggerFactory.getLogger(ConfigLoader.class);
     private static JsonNode root;
 
-    static { load(); }
+    static {
+        load();
+    }
 
     private static void load() {
         try (InputStream is = ConfigLoader.class.getResourceAsStream("/config.json")) {
@@ -40,11 +42,23 @@ public class ConfigLoader {
         return root.path("settings").path("defaultMaxLevel").asInt(2);
     }
 
-    public static long getRequestDelayMs() {
-        return root.path("settings").path("requestDelayMs").asLong(200);
-    }
-
     public static int getThreadPoolSize() {
         return root.path("settings").path("threadPoolSize").asInt(4);
+    }
+
+    public static long getSixMonthsMillis() {
+        return root.path("settings").path("sixMonthsMillis").asLong(15552000000L);
+    }
+
+    public static int getMinBodyLength() {
+        return root.path("settings").path("minBodyLength").asInt(150);
+    }
+
+    public static int getMinTagLength() {
+        return root.path("settings").path("minTagLength").asInt(20);
+    }
+
+    public static long getNonArticleTTL() {
+        return root.path("settings").path("nonArticleTTL").asLong(18000000);
     }
 }

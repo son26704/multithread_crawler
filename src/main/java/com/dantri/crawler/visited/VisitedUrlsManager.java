@@ -7,9 +7,6 @@ import java.io.*;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Quản lý URL bài viết đã crawl vĩnh viễn (persist tới file).
- */
 public class VisitedUrlsManager {
     private static final Logger log = LoggerFactory.getLogger(VisitedUrlsManager.class);
     private static final String FILE = "data/visited_urls.txt";
@@ -33,16 +30,18 @@ public class VisitedUrlsManager {
         }
     }
 
-    public boolean isVisited(String url) {
-        return visited.contains(url);
-    }
-
     public synchronized void markVisited(String url) {
-        if (!visited.add(url)) return;
+        if (!visited.add(url)) {
+            return;
+        }
         try (FileWriter fw = new FileWriter(FILE, true)) {
             fw.append(url).append('\n');
         } catch (IOException e) {
             log.warn("Failed to write visited URL {}", url, e);
         }
+    }
+
+    public boolean isVisited(String url) {
+        return visited.contains(url);
     }
 }

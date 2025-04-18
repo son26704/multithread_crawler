@@ -10,6 +10,10 @@
 	"maxUrlsPerCrawl": 100,
 	"defaultMaxLevel": 4,
 	"requestDelayMs": 200,
-	"threadPoolSize": 6
+	"threadPoolSize": 6,
+	"sixMonthsMillis": 15552000000,
+	"minBodyLength": 150,
+	"minTagLength": 20,
+	"nonArticleTTL": 18000000
   }
 }

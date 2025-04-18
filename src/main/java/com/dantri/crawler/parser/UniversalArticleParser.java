@@ -1,5 +1,6 @@
 package com.dantri.crawler.parser;
 
+import com.dantri.crawler.config.ConfigLoader;
 import com.dantri.crawler.domain.Article;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +27,6 @@ public class UniversalArticleParser {
     private static final Logger log = LoggerFactory.getLogger(UniversalArticleParser.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    // --- Date formatters ---
     private static final DateTimeFormatter[] DATE_FORMATTERS = {
             DateTimeFormatter.ISO_OFFSET_DATE_TIME,
             new DateTimeFormatterBuilder()
@@ -36,20 +36,19 @@ public class UniversalArticleParser {
             new DateTimeFormatterBuilder()
                     .appendPattern("yyyy-MM-dd'T'HH:mm:ss[.SSSSSS][.SSS]").toFormatter(Locale.US),
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.US)
+            DateTimeFormatter.ofPattern("MMM dd, yyyy", new Locale("vi", "VN"))
     };
     private static final Pattern DATE_TEXT_PATTERN = Pattern.compile(
             "(?:Published|publishdate|datePublished|datePosted)[:\\s]+" +
                     "(\\d{1,2}/\\d{1,2}/\\d{4}\\s+\\d{1,2}:\\d{2}|\\w+\\s+\\d{1,2},\\s*\\d{4})",
             Pattern.CASE_INSENSITIVE
     );
-    private static final int MIN_BODY_LEN = 150;
-    private static final int MIN_TAG_LEN  = 20;
+    private static final int MIN_BODY_LEN = ConfigLoader.getMinBodyLength();
+    private static final int MIN_TAG_LEN  = ConfigLoader.getMinTagLength();
 
-    /** 1) Remove stray spaces before +HH:MM, 2) ensure +HHMM→+HH:MM */
     private String normalizeOffset(String raw) {
         if (raw == null) return null;
-        // remove whitespace before + or - offset
+        // Xóa khoảng trắng
         String s = raw.replaceAll("\\s+(?=[+-]\\d{2}:?\\d{2})", "");
         // convert +HHMM to +HH:MM
         s = s.replaceAll("([+-]\\d{2})(\\d{2})$", "$1:$2");
@@ -76,22 +75,22 @@ public class UniversalArticleParser {
                     .timeout(10000)
                     .get();
 
-            // 1) Content layer
+            // Content layer
             Article art = parseJsonLdContent(doc, url);
-            if (art == null) art = parseOgContent(doc, url);
+//            if (art == null) art = parseOgContent(doc, url);
             if (art == null) art = parseMetaContent(doc, url);
             if (art == null) art = parseBoilerpipeContent(doc, url);
             if (art == null) return null;
 
-            // 2) Date extraction in priority
+            // Lấy ra publishTime
             Date pub = extractDateFromJsonLd(doc);
             if (pub == null) pub = extractDateFromTimeTag(doc);
-            if (pub == null) pub = extractDateFromOg(doc);
+//            if (pub == null) pub = extractDateFromOg(doc);
             if (pub == null) pub = extractDateFromMeta(doc);
             if (pub == null) pub = extractDateFromText(doc);
             art.setPublishTime(pub);
 
-            // 3) Author extraction
+            // Author
             String author = extractAuthorFromJsonLd(doc);
             if (author == null) author = extractAuthorFromMeta(doc);
             if (author == null) author = extractAuthorFromText(doc);
@@ -115,8 +114,6 @@ public class UniversalArticleParser {
             return null;
         }
     }
-
-    // --- Content layers ---
 
     private Article parseJsonLdContent(Document doc, String url) {
         for (Element s : doc.select("script[type=application/ld+json]")) {
@@ -143,21 +140,21 @@ public class UniversalArticleParser {
         return null;
     }
 
-    private Article parseOgContent(Document doc, String url) {
-        Element t = doc.selectFirst("meta[property=og:title]");
-        if (t == null) return null;
-        String title = clean(t.attr("content"));
-        if (title.isBlank()) return null;
-        Article a = new Article();
-        a.setUrl(url);
-        a.setParseLayer("OG");
-        a.setTitle(title);
-        Element d = doc.selectFirst("meta[property=og:description]");
-        a.setDescription(clean(d != null ? d.attr("content") : ""));
-        String content = extractArticleContent(doc);
-        if (content != null) a.setContent(content);
-        return a;
-    }
+//    private Article parseOgContent(Document doc, String url) {
+//        Element t = doc.selectFirst("meta[property=og:title]");
+//        if (t == null) return null;
+//        String title = clean(t.attr("content"));
+//        if (title.isBlank()) return null;
+//        Article a = new Article();
+//        a.setUrl(url);
+//        a.setParseLayer("OG");
+//        a.setTitle(title);
+//        Element d = doc.selectFirst("meta[property=og:description]");
+//        a.setDescription(clean(d != null ? d.attr("content") : ""));
+//        String content = extractArticleContent(doc);
+//        if (content != null) a.setContent(content);
+//        return a;
+//    }
 
     private Article parseMetaContent(Document doc, String url) {
         String title = clean(doc.title());
@@ -191,7 +188,6 @@ public class UniversalArticleParser {
         return null;
     }
 
-    // --- Date extraction ---
 
     private Date extractDateFromJsonLd(Document doc) {
         for (Element s : doc.select("script[type=application/ld+json]")) {
@@ -223,16 +219,16 @@ public class UniversalArticleParser {
         return null;
     }
 
-    private Date extractDateFromOg(Document doc) {
-        Element t = doc.selectFirst("meta[property=article:published_time]");
-        if (t != null) {
-            OffsetDateTime odt = tryParseOffset(clean(t.attr("content")));
-            if (odt != null) {
-                return Date.from(odt.atZoneSameInstant(ZoneId.systemDefault()).toInstant());
-            }
-        }
-        return null;
-    }
+//    private Date extractDateFromOg(Document doc) {
+//        Element t = doc.selectFirst("meta[property=article:published_time]");
+//        if (t != null) {
+//            OffsetDateTime odt = tryParseOffset(clean(t.attr("content")));
+//            if (odt != null) {
+//                return Date.from(odt.atZoneSameInstant(ZoneId.systemDefault()).toInstant());
+//            }
+//        }
+//        return null;
+//    }
 
     private Date extractDateFromMeta(Document doc) {
         Element t = doc.selectFirst("meta[name=date],meta[name=pubdate]");
@@ -255,8 +251,6 @@ public class UniversalArticleParser {
         }
         return null;
     }
-
-    // --- Author extraction ---
 
     private String extractAuthorFromJsonLd(Document doc) {
         for (Element s : doc.select("script[type=application/ld+json]")) {
@@ -287,8 +281,6 @@ public class UniversalArticleParser {
         Element t = doc.selectFirst("p.byline, span.author, div.author");
         return t != null ? clean(t.text()) : null;
     }
-
-    // --- Helpers ---
 
     private String extractArticleContent(Document doc) {
         Elements es = doc.select("article,div.article,div.content,div.post,div.entry-content,div.article-body");
