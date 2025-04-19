@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,6 +31,7 @@ public class CrawlWorker implements Runnable {
     private final ArticleStorage storage;
     private final int maxLevel;
     private final AtomicBoolean running;
+    private final List<String> seeds;
     private final long sixMonthsMillis = ConfigLoader.getSixMonthsMillis();
 
     public CrawlWorker(CrawlQueueManager queue,
@@ -46,6 +48,7 @@ public class CrawlWorker implements Runnable {
         this.storage = storage;
         this.maxLevel = maxLevel;
         this.running = running;
+        this.seeds = ConfigLoader.getStartUrls();
     }
 
     @Override
@@ -55,18 +58,23 @@ public class CrawlWorker implements Runnable {
             UrlTask task = queue.takeTask();
             if (task == null) continue;
 
-            String url = task.getUrl();
-            int level = task.getLevel();
+            String url   = task.getUrl();
+            int level    = task.getLevel();
 
-            // Article đã thăm
+            // Seed URLs: chỉ extract links, không mark visited/non-article
+            if (seeds.contains(url)) {
+                if (level < maxLevel) extractAndQueueLinks(url, level + 1);
+                continue;
+            }
+
+            // Article visited check
             if (visited.isVisited(url)) {
                 continue;
             }
-            // Non-article đã thăm (chưa expired)
+            // Non-article check
             if (nonArticleStore.isNonArticle(url)) {
                 continue;
             }
-            // Được xử lý bởi luồng khác
             if (!inProgress.add(url)) {
                 continue;
             }
@@ -84,7 +92,6 @@ public class CrawlWorker implements Runnable {
                         storage.save(art);
                     }
                     visited.markVisited(url);
-
                 } else {
                     // Đánh dấu non-article với TTL
                     nonArticleStore.markNonArticle(url);
@@ -107,20 +114,19 @@ public class CrawlWorker implements Runnable {
                     .userAgent("Mozilla/5.0")
                     .timeout(8000)
                     .get();
-            String base = new URI(pageUrl).getHost();
+            String baseDomain = new URI(pageUrl).getHost();
 
             doc.select("a[href]").forEach(e -> {
                 String href = e.absUrl("href").split("#")[0];
                 if (href.isBlank()) return;
                 try {
-                    if (!new URI(href).getHost().equals(base)) return;
+                    if (!new URI(href).getHost().equals(baseDomain)) return;
                 } catch (Exception ignored) {}
 
                 // Đẩy các outlinks tìm được vào queue
                 if (!visited.isVisited(href)
                         && !nonArticleStore.isNonArticle(href)
                         && inProgress.add(href)) {
-
                     queue.pushTask(new UrlTask(href, nextLevel));
                     inProgress.remove(href);
                 }

@@ -4,7 +4,14 @@
 	"https://vnexpress.net/",
 	"https://tuoitre.vn/",
 	"https://vietnamnet.vn/",
-	"https://tienphong.vn/"
+	"https://tienphong.vn/",
+	"https://thanhnien.vn/",
+	"https://vtcnews.vn/",
+	"https://danviet.vn/",
+	"https://nhandan.vn/",
+	"https://www.qdnd.vn/",
+	"https://soha.vn/",
+	"https://baochinhphu.vn/"
   ],
   "settings": {
 	"maxUrlsPerCrawl": 100,

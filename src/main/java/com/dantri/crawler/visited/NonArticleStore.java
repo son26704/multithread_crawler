@@ -9,18 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 public class NonArticleStore {
     private static final Logger log = LoggerFactory.getLogger(NonArticleStore.class);
@@ -29,9 +25,12 @@ public class NonArticleStore {
 
     private final Map<String, Long> map = new ConcurrentHashMap<>();
     private final ObjectMapper mapper = new ObjectMapper();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public NonArticleStore() {
         load();
+        // schedule cleanup every minute
+        scheduler.scheduleAtFixedRate(this::cleanupExpired, 1, 1, TimeUnit.MINUTES);
     }
 
     private void load() {
@@ -41,8 +40,7 @@ public class NonArticleStore {
                 try {
                     JsonNode n = mapper.readTree(line);
                     String url = n.get("url").asText();
-                    String ts = n.get("skippedAt").asText();
-                    Instant inst = Instant.parse(ts);
+                    Instant inst = Instant.parse(n.get("skippedAt").asText());
                     map.put(url, inst.toEpochMilli());
                 } catch (Exception e) {
                     log.warn("Skipping invalid line in non-article store: {}", line);
@@ -54,20 +52,26 @@ public class NonArticleStore {
         }
     }
 
+    /** Clean up expired entries and rewrite file if any removed */
+    private synchronized void cleanupExpired() {
+        long now = System.currentTimeMillis();
+        boolean changed = map.entrySet().removeIf(e -> (now - e.getValue()) >= TTL_MS);
+        if (changed) {
+            rewriteStore();
+            log.info("Cleaned up expired non-article URLs, remaining={}", map.size());
+        }
+    }
 
     public synchronized boolean isNonArticle(String url) {
         Long t = map.get(url);
         if (t == null) return false;
-        long age = System.currentTimeMillis() - t;
-        if (age >= TTL_MS) {
-            // expired -> remove and rewrite file
+        if ((System.currentTimeMillis() - t) >= TTL_MS) {
             map.remove(url);
             rewriteStore();
             return false;
         }
         return true;
     }
-
 
     public synchronized void markNonArticle(String url) {
         long now = System.currentTimeMillis();
@@ -77,30 +81,37 @@ public class NonArticleStore {
             ObjectNode node = mapper.createObjectNode();
             node.put("url", url);
             node.put("skippedAt", Instant.ofEpochMilli(now).toString());
-            String line = mapper.writeValueAsString(node);
-            Files.write(FILE, (line + "\n").getBytes(StandardCharsets.UTF_8),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(
+                    FILE,
+                    mapper.writeValueAsString(node) + "\n",
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND
+            );
         } catch (IOException e) {
             log.error("Failed to append to non-article store: {}", url, e);
         }
     }
 
-    private void rewriteStore() {
+    private synchronized void rewriteStore() {
         try {
-            List<String> lines = map.entrySet().stream()
-                    .map(e -> {
+            Files.createDirectories(FILE.getParent());
+            Files.write(
+                    FILE,
+                    map.entrySet().stream().map(e -> {
                         ObjectNode node = mapper.createObjectNode();
                         node.put("url", e.getKey());
                         node.put("skippedAt", Instant.ofEpochMilli(e.getValue()).toString());
                         try {
                             return mapper.writeValueAsString(node);
                         } catch (JsonProcessingException ex) {
-                            throw new RuntimeException(ex);
+                            throw new UncheckedIOException(ex);
                         }
-                    })
-                    .collect(Collectors.toList());
-            Files.write(FILE, lines, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    }).collect(Collectors.toList()),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
         } catch (IOException e) {
             log.error("Failed to rewrite non-article store", e);
         }
